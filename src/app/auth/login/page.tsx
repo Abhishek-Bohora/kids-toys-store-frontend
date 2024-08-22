@@ -1,4 +1,5 @@
 "use client";
+
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
+import { useAuthStore } from "@/store/auth.store";
+import { useRouter } from "next/navigation";
 
 const loginSchema = z.object({
   email: z
@@ -44,6 +47,9 @@ const loginPOST = async (loginFormData: LoginFormValues) => {
 };
 
 export default function Login() {
+  const router = useRouter();
+  const { setAccessToken, setRefreshToken, clearTokens, setIsAuthenticated } =
+    useAuthStore();
   const {
     register,
     handleSubmit,
@@ -53,17 +59,25 @@ export default function Login() {
   });
 
   const onSubmit = async (loginFormData: LoginFormValues) => {
-    const { data } = await loginPOST(loginFormData);
-    console.log(data);
-    const {
-      accessToken,
-      refreshToken,
-      user: { _id, username, email, role, isEmailVerified },
-    } = data?.data;
+    try {
+      const { data } = await loginPOST(loginFormData);
+      console.log(data);
+      const { accessToken, refreshToken } = data?.data;
 
-    //TODO: set all these data in the global state zustand: so that
-    // we can access from whole application when the user logged in a application
-    // clear the store when the user logged out
+      setAccessToken(accessToken);
+      setRefreshToken(refreshToken);
+      setIsAuthenticated(true);
+
+      const { accessTkn, refreshTkn, isAuthenticated, accessTokenData } =
+        useAuthStore.getState();
+      // console.log(accessTkn);
+      // console.log(isAuthenticated);
+      console.log(accessTokenData);
+      router.push("/product");
+    } catch (error) {
+      clearTokens();
+      throw error;
+    }
   };
 
   return (
