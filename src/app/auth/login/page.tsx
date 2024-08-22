@@ -61,7 +61,6 @@ export default function Login() {
   const onSubmit = async (loginFormData: LoginFormValues) => {
     try {
       const { data } = await loginPOST(loginFormData);
-      console.log(data);
       const { accessToken, refreshToken } = data?.data;
 
       setAccessToken(accessToken);
@@ -72,7 +71,7 @@ export default function Login() {
         useAuthStore.getState();
       // console.log(accessTkn);
       // console.log(isAuthenticated);
-      console.log(accessTokenData);
+      // console.log(accessTokenData);
       router.push("/product");
     } catch (error) {
       clearTokens();
