@@ -1,11 +1,12 @@
 "use client";
-
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import Image from "next/image";
 import { FaCartPlus } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { IoMdAddCircle } from "react-icons/io";
+import { useAuthStore } from "@/store/auth.store";
 import {
   Dialog,
   DialogContent,
@@ -39,10 +40,21 @@ const getProducts = async () => {
   }
 };
 
+const getCategories = async () => {
+  try {
+    const response = await axios.get(
+      "http://localhost:8080/api/v1/ecommerce/categories"
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 const productSchema = z.object({
   productName: z.string().min(1, { message: "Product name is required" }),
   productDescription: z.string().min(1),
-  category: z.string().min(1, { message: "Password is required" }),
+  category: z.string().min(1, { message: "category is required" }),
   stock: z
     .number()
     .min(0, { message: "Stock must be a non-negative number" })
@@ -65,7 +77,6 @@ const productSchema = z.object({
 type ProductformValues = z.infer<typeof productSchema>;
 
 export default function Product() {
-  const queryClient = useQueryClient();
   const query = useQuery({ queryKey: ["products"], queryFn: getProducts });
   console.log(query.data);
 
@@ -120,9 +131,69 @@ const ProductCard = ({ name, mainImageUrl, price }) => {
   );
 };
 
+const addProduct = async (productData: ProductformValues, accessTkn) => {
+  try {
+    console.log("add product function ");
+    console.log(Object.fromEntries(productData));
+    console.log(accessTkn);
+    const response = await axios.post(
+      "http://localhost:8080/api/v1/ecommerce/product",
+      productData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${accessTkn}`,
+        },
+      }
+    );
+  } catch (error) {
+    throw new Error("Failed to add product");
+  }
+};
+
 function AddProductDialog() {
+  const { accessTkn, refreshTkn, isAuthenticated, accessTokenData } =
+    useAuthStore.getState();
+  const mutation = useMutation({
+    mutationFn: (formData: FormData) => addProduct(formData, accessTkn),
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+
+  const categoryQuery = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories,
+  });
+
+  console.log(categoryQuery.data);
+
   const onSubmit = (productFormData: ProductformValues) => {
-    console.log(productFormData);
+    const formData = new FormData();
+    // Map productName to name, productDescription to description
+    formData.append("name", productFormData.productName);
+    formData.append("description", productFormData.productDescription);
+
+    // Ensure category is an ID
+    formData.append("category", productFormData.category);
+
+    // Ensure these are numbers
+    formData.append("stock", productFormData.stock.toString());
+    formData.append("price", productFormData.price.toString());
+
+    if (productFormData.mainImage instanceof File) {
+      formData.append("mainImage", productFormData.mainImage);
+    }
+
+    if (productFormData.subImages && Array.isArray(productFormData.subImages)) {
+      productFormData.subImages.forEach((file, index) => {
+        if (file instanceof File) {
+          formData.append(`subImages`, file);
+        }
+      });
+    }
+    mutation.mutate(formData);
   };
 
   const {
@@ -177,12 +248,19 @@ function AddProductDialog() {
           <div className="flex space-x-4">
             <div className="flex-1 space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select onValueChange={(value) => setValue("category", value)}>
+              <Select
+                onValueChange={(value) => setValue("category", value)}
+                disabled={categoryQuery.isLoading}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="category1">Category 1</SelectItem>
+                  {categoryQuery.data?.map((category) => (
+                    <SelectItem key={category._id} value={category._id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {errors.category && (
