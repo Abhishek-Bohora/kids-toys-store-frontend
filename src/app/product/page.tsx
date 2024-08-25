@@ -28,6 +28,9 @@ import {
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Skeleton } from "@/components/ui/skeleton";
+import ClipLoader from "react-spinners/ClipLoader";
+import { useToast } from "@/components/ui/use-toast";
 
 const getProducts = async () => {
   try {
@@ -77,14 +80,34 @@ const productSchema = z.object({
 type ProductformValues = z.infer<typeof productSchema>;
 
 export default function Product() {
-  const query = useQuery({ queryKey: ["products"], queryFn: getProducts });
-  console.log(query.data);
+  const { data, isLoading } = useQuery({
+    queryKey: ["products"],
+    queryFn: getProducts,
+  });
+  console.log(data);
+  if (isLoading) {
+    const skeletonArray = Array.from({ length: 8 });
+
+    return (
+      <div className="flex flex-wrap mt-2 gap-4 p-2">
+        {skeletonArray.map((_, index) => (
+          <div key={index} className="flex flex-col space-y-3">
+            <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[250px]" />
+              <Skeleton className="h-4 w-[200px]" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="mx-3">
       <AddProductDialog />
       <div className="flex flex-wrap mt-2 gap-4  p-2">
-        {query.data?.products?.map((product) => {
+        {data?.products?.map((product) => {
           return (
             <div key={product._id}>
               <ProductCard
@@ -134,8 +157,8 @@ const ProductCard = ({ name, mainImageUrl, price }) => {
 const addProduct = async (productData: ProductformValues, accessTkn) => {
   try {
     console.log("add product function ");
-    console.log(Object.fromEntries(productData));
-    console.log(accessTkn);
+    // console.log(Object.fromEntries(productData));
+    // console.log(accessTkn);
     const response = await axios.post(
       "http://localhost:8080/api/v1/ecommerce/product",
       productData,
@@ -159,6 +182,11 @@ function AddProductDialog() {
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      // success toast
+      toast({
+        title: "Product Added",
+        description: "Your product has been added successfully!",
+      });
     },
   });
 
@@ -166,6 +194,8 @@ function AddProductDialog() {
     queryKey: ["categories"],
     queryFn: getCategories,
   });
+
+  const { toast } = useToast();
 
   console.log(categoryQuery.data);
 
@@ -338,7 +368,20 @@ function AddProductDialog() {
             )}
           </div>
           <DialogFooter>
-            <Button type="submit">Save changes</Button>
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending && (
+                <div className="mx-2 mt-2">
+                  <ClipLoader
+                    loading={mutation.isPending}
+                    color="#fff"
+                    size={20}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                  />
+                </div>
+              )}
+              Save
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

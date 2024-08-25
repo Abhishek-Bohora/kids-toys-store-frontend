@@ -4,14 +4,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
-        {/* Layout UI */}
-        <main>
-          <nav className="bg-green-500 p-3">Navbar</nav>
-          {children}
-        </main>
-      </body>
-    </html>
+    <div>
+      <nav className="bg-green-600 p-3">
+        <div className="flex justify-between">
+          <div>Navbar</div>
+          <div className=""></div>
+        </div>
+      </nav>
+      {children}
+    </div>
   );
 }
