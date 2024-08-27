@@ -41,7 +41,13 @@ export default function RootLayout({
       >
         <nav className="bg-green-600 p-3">
           <div className="flex justify-between">
-            <div>Navbar</div>
+            <div>
+              <img
+                src="https://github.com/shadcn.png"
+                alt=""
+                className="h-10 w-10"
+              />
+            </div>
             <div className="flex items-center gap-2">
               <div>
                 <CiShoppingCart color="#fff" size={28} />

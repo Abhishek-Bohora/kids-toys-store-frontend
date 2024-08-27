@@ -4,6 +4,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
 import { useCartQuery, useUpdateCartItemMutation } from "@/hooks/useCartQuery";
 import useCartStore from "@/store/cart.store";
+import { useRouter } from "next/navigation";
 
 export default function Cart() {
   const { accessTkn } = useAuthStore.getState();
@@ -11,13 +12,14 @@ export default function Cart() {
     useCartStore();
   const { data, isLoading, error } = useCartQuery(accessTkn);
   const updateCartItemMutation = useUpdateCartItemMutation();
-
+  const router = useRouter();
   useEffect(() => {
     if (data) {
       setCartData(data);
     }
   }, [data, setCartData]);
 
+  console.log(items);
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     updateLocalItemQuantity(productId, newQuantity);
     updateCartItemMutation.mutate({
@@ -81,7 +83,11 @@ export default function Cart() {
               <span>Subtotal</span>
               <span>${subtotal.toFixed(2)}</span>
             </div>
-            <Button type="submit" className="w-full">
+            <Button
+              type="submit"
+              className="w-full"
+              onClick={() => router.push("/cart/checkout")}
+            >
               Checkout
             </Button>
           </div>
