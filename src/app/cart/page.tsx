@@ -1,67 +1,42 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useAuthStore } from "@/store/auth.store";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import axios from "axios";
-
-const getUserCart = async (accessToken) => {
-  try {
-    const response = await axios.get(
-      "http://localhost:8080/api/v1/ecommerce/cart",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-    return response.data.data;
-  } catch (error) {
-    console.log(error);
-  }
-};
+import { useCartQuery, useUpdateCartItemMutation } from "@/hooks/useCartQuery";
+import useCartStore from "@/store/cart.store";
 
 export default function Cart() {
   const { accessTkn } = useAuthStore.getState();
-  const { data, isLoading } = useQuery({
-    queryKey: ["userCart"],
-    queryFn: () => getUserCart(accessTkn),
-  });
-
-  const [cartItems, setCartItems] = useState([]);
-  const [subtotal, setSubtotal] = useState(0);
+  const { items, subtotal, setCartData, updateLocalItemQuantity } =
+    useCartStore();
+  const { data, isLoading, error } = useCartQuery(accessTkn);
+  const updateCartItemMutation = useUpdateCartItemMutation();
 
   useEffect(() => {
     if (data) {
-      setCartItems(data.items);
-      setSubtotal(data.cartTotal);
+      setCartData(data);
     }
-  }, [data]);
+  }, [data, setCartData]);
 
-  const handleQuantityChange = (productId, newQuantity) => {
-    const updatedItems = cartItems.map((item) =>
-      item.product._id === productId
-        ? { ...item, quantity: parseInt(newQuantity) }
-        : item
-    );
-    setCartItems(updatedItems);
-
-    const newSubtotal = updatedItems.reduce(
-      (total, item) => total + item.product.price * item.quantity,
-      0
-    );
-    setSubtotal(newSubtotal);
+  const handleQuantityChange = (productId: string, newQuantity: number) => {
+    updateLocalItemQuantity(productId, newQuantity);
+    updateCartItemMutation.mutate({
+      productId,
+      quantity: newQuantity,
+      accessToken: accessTkn,
+    });
   };
 
   if (isLoading) return <div>Loading...</div>;
-  if (!data) return <div>No items in cart</div>;
+  if (error) return <div>Error loading cart: {(error as Error).message}</div>;
+  if (items.length === 0) return <div>Your cart is empty</div>;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row gap-8">
         <div className="md:w-2/3">
           <h1 className="text-lg font-semibold mb-4">Shopping Items</h1>
-          {cartItems.map((item) => (
+          {items.map((item) => (
             <div
               key={item.product._id}
               className="flex items-center mb-6 pb-6 border-b"
@@ -82,7 +57,10 @@ export default function Cart() {
                   className="border rounded px-2 py-1 mr-2"
                   value={item.quantity}
                   onChange={(e) =>
-                    handleQuantityChange(item.product._id, e.target.value)
+                    handleQuantityChange(
+                      item.product._id,
+                      parseInt(e.target.value)
+                    )
                   }
                 >
                   {[...Array(item.product.stock)].map((_, i) => (
