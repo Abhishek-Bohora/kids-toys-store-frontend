@@ -86,7 +86,7 @@ export default function Cart() {
             <Button
               type="submit"
               className="w-full"
-              onClick={() => router.push("/cart/checkout")}
+              onClick={() => router.push("/product/cart/checkout")}
             >
               Checkout
             </Button>

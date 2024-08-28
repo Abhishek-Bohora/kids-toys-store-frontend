@@ -114,6 +114,7 @@ export default function Product() {
                 name={product.name}
                 mainImageUrl={product?.mainImage?.url}
                 price={product.price}
+                productId={product._id}
               />
             </div>
           );
@@ -123,7 +124,43 @@ export default function Product() {
   );
 }
 
-const ProductCard = ({ name, mainImageUrl, price }) => {
+const addItemsToCart = async (id, accesToken) => {
+  try {
+    const response = await axios.post(
+      `http://localhost:8080/api/v1/ecommerce/cart/item/${id}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${accesToken}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const ProductCard = ({ name, mainImageUrl, price, productId }) => {
+  const { toast } = useToast();
+  const { accessTkn } = useAuthStore();
+  const mutation = useMutation({
+    mutationFn: () => addItemsToCart(productId, accessTkn),
+    onSuccess: (data) => {
+      toast({
+        title: "Item added to cart",
+        description: "Your Item has been added to cart successfully!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error adding item to cart:", error);
+    },
+  });
   return (
     <div className="hover:bg-gray-200 400 p-4 rounded-md">
       <div className="flex">
@@ -136,8 +173,13 @@ const ProductCard = ({ name, mainImageUrl, price }) => {
             height={200}
           />
         </div>
-        <div className="w-10 h-10 bg-white p-2 rounded-full shadow z-10 ">
-          <FaCartPlus size={22} />
+        <div className="w-10 h-10 bg-white p-2 rounded-full shadow z-10 cursor-pointer ">
+          <FaCartPlus
+            size={22}
+            onClick={() => {
+              mutation.mutate();
+            }}
+          />
         </div>
       </div>
 
