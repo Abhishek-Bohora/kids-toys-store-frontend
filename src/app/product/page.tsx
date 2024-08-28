@@ -236,9 +236,11 @@ function AddProductDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="mt-4 mx-1">
-          Add product <IoMdAddCircle className="mx-1" size={20} />
-        </Button>
+        {accessTokenData?.role === "ADMIN" && (
+          <Button className="mt-4 mx-1">
+            Add product <IoMdAddCircle className="mx-1" size={20} />
+          </Button>
+        )}
       </DialogTrigger>
       {/*  */}
       <DialogContent
