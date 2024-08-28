@@ -38,3 +38,20 @@ export const updateCartItem = async ({ productId, quantity, accessToken }) => {
     throw error;
   }
 };
+
+export const addItemsToCart = async (id, accesToken) => {
+  try {
+    const response = await axios.post(
+      `http://localhost:8080/api/v1/ecommerce/cart/item/${id}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${accesToken}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};

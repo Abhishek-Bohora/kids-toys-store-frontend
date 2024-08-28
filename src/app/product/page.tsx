@@ -31,28 +31,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Skeleton } from "@/components/ui/skeleton";
 import ClipLoader from "react-spinners/ClipLoader";
 import { useToast } from "@/components/ui/use-toast";
-
-const getProducts = async () => {
-  try {
-    const response = await axios.get(
-      "http://localhost:8080/api/v1/ecommerce/product"
-    );
-    return response.data.data;
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const getCategories = async () => {
-  try {
-    const response = await axios.get(
-      "http://localhost:8080/api/v1/ecommerce/categories"
-    );
-    return response.data.data;
-  } catch (error) {
-    console.error(error);
-  }
-};
+import { useRouter } from "next/navigation";
+import { addItemsToCart } from "@/services/cart.service";
+import { getProducts, getCategories } from "@/services/product.service";
 
 const productSchema = z.object({
   productName: z.string().min(1, { message: "Product name is required" }),
@@ -124,24 +105,8 @@ export default function Product() {
   );
 }
 
-const addItemsToCart = async (id, accesToken) => {
-  try {
-    const response = await axios.post(
-      `http://localhost:8080/api/v1/ecommerce/cart/item/${id}`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${accesToken}`,
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.log(error);
-  }
-};
-
 const ProductCard = ({ name, mainImageUrl, price, productId }) => {
+  const router = useRouter();
   const { toast } = useToast();
   const { accessTkn } = useAuthStore();
   const mutation = useMutation({
@@ -162,13 +127,16 @@ const ProductCard = ({ name, mainImageUrl, price, productId }) => {
     },
   });
   return (
-    <div className="hover:bg-gray-200 400 p-4 rounded-md">
+    <div
+      className="hover:bg-gray-200 400 p-4 rounded-md cursor-pointer"
+      onClick={() => router.push(`/product/${productId}`)}
+    >
       <div className="flex">
         <div className="mr-2 w-44 h-44">
           <Image
             src={mainImageUrl}
             alt="Product Image"
-            className="object-cover"
+            className="object-cover cursor-pointer"
             width={200}
             height={200}
           />
