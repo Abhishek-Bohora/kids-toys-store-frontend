@@ -24,6 +24,7 @@ interface CartStore {
 const useCartStore = create<CartStore>((set, get) => ({
   items: [],
   subtotal: 0,
+  cartItemCount: 0,
   setCartData: (data) => {
     set({
       items: data.items,
