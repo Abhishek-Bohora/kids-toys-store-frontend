@@ -1,6 +1,11 @@
 "use client";
 import { queryClient } from "@/lib/queryClient";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import {
+  useQuery,
+  useQueryClient,
+  useMutation,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import axios from "axios";
 import Image from "next/image";
 import { FaCartPlus } from "react-icons/fa";
@@ -33,7 +38,21 @@ import ClipLoader from "react-spinners/ClipLoader";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { addItemsToCart } from "@/services/cart.service";
-import { getProducts, getCategories } from "@/services/product.service";
+import {
+  getProducts,
+  getCategories,
+  addProduct,
+} from "@/services/product.service";
+import { useState } from "react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const productSchema = z.object({
   productName: z.string().min(1, { message: "Product name is required" }),
@@ -61,11 +80,25 @@ const productSchema = z.object({
 type ProductformValues = z.infer<typeof productSchema>;
 
 export default function Product() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["products"],
-    queryFn: getProducts,
+  const [page, setPage] = useState(1); // Start from page 1
+  const limit = 10;
+
+  const {
+    isPending,
+    isError,
+    error,
+    data,
+    isFetching,
+    isPlaceholderData,
+    isLoading,
+  } = useQuery({
+    queryKey: ["products", page],
+    queryFn: () => getProducts(page, limit),
+    placeholderData: keepPreviousData,
   });
-  console.log(data);
+
+  const totalPages = data?.totalPages || 1;
+
   if (isLoading) {
     const skeletonArray = Array.from({ length: 8 });
 
@@ -101,6 +134,44 @@ export default function Product() {
           );
         })}
       </div>
+      <Pagination className="mt-4">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => setPage((old) => Math.max(old - 1, 1))}
+              className={`cursor-pointer ${
+                page === 1 ? "cursor-not-allowed opacity-50" : ""
+              }`}
+            />
+          </PaginationItem>
+          {[...Array(totalPages)].map((_, index) => (
+            <PaginationItem key={index}>
+              <PaginationLink
+                onClick={() => setPage(index + 1)}
+                isActive={page === index + 1}
+                className="cursor-pointer"
+              >
+                {index + 1}
+              </PaginationLink>
+            </PaginationItem>
+          ))}
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => {
+                if (!isPlaceholderData && data?.hasNextPage) {
+                  setPage((old) => old + 1);
+                }
+              }}
+              className={`cursor-pointer ${
+                isPlaceholderData || !data?.hasNextPage
+                  ? "cursor-not-allowed opacity-50"
+                  : ""
+              }`}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+      {isFetching && !isPending ? <div>Updating...</div> : null}
     </div>
   );
 }
@@ -144,7 +215,8 @@ const ProductCard = ({ name, mainImageUrl, price, productId }) => {
         <div className="w-10 h-10 bg-white p-2 rounded-full shadow z-10 cursor-pointer ">
           <FaCartPlus
             size={22}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               mutation.mutate();
             }}
           />
@@ -162,26 +234,6 @@ const ProductCard = ({ name, mainImageUrl, price, productId }) => {
       </div>
     </div>
   );
-};
-
-const addProduct = async (productData: ProductformValues, accessTkn) => {
-  try {
-    console.log("add product function ");
-    // console.log(Object.fromEntries(productData));
-    // console.log(accessTkn);
-    const response = await axios.post(
-      "http://localhost:8080/api/v1/ecommerce/product",
-      productData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${accessTkn}`,
-        },
-      }
-    );
-  } catch (error) {
-    throw new Error("Failed to add product");
-  }
 };
 
 function AddProductDialog() {

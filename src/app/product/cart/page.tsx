@@ -51,7 +51,7 @@ export default function Cart() {
               <div className="flex-grow">
                 <h2 className="text-lg font-semibold">{item.product.name}</h2>
                 <p className="text-gray-800 font-medium">
-                  ${item.product.price.toFixed(2)}
+                  Rs {item.product.price.toFixed(2)}
                 </p>
               </div>
               <div className="flex items-center">
@@ -81,7 +81,7 @@ export default function Cart() {
             <h2 className="text-lg font-semibold mb-4">Order summary</h2>
             <div className="flex justify-between mb-2">
               <span>Subtotal</span>
-              <span>${subtotal.toFixed(2)}</span>
+              <span>Rs {subtotal.toFixed(2)}</span>
             </div>
             <Button
               type="submit"
