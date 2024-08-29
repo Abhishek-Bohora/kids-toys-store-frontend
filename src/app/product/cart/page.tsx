@@ -30,14 +30,15 @@ export default function Cart() {
     }
   }, [data, setCartData]);
 
-  console.log(items);
   const handleQuantityChange = (productId: string, newQuantity: number) => {
-    updateLocalItemQuantity(productId, newQuantity);
-    updateCartItemMutation.mutate({
-      productId,
-      quantity: newQuantity,
-      accessToken: accessTkn,
-    });
+    if (newQuantity > 0) {
+      updateLocalItemQuantity(productId, newQuantity);
+      updateCartItemMutation.mutate({
+        productId,
+        quantity: newQuantity,
+        accessToken: accessTkn,
+      });
+    }
   };
 
   const handleDeleteItem = (productId: string) => {
@@ -80,24 +81,27 @@ export default function Cart() {
                 </p>
               </div>
               <div className="flex items-center">
-                <select
-                  className="border rounded px-2 py-1 mr-2"
-                  value={item.quantity}
-                  onChange={(e) =>
-                    handleQuantityChange(
-                      item.product._id,
-                      parseInt(e.target.value)
-                    )
-                  }
-                >
-                  {[...Array(item.product.stock)].map((_, i) => (
-                    <option key={i} value={i + 1}>
-                      {i + 1}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex items-center border rounded">
+                  <button
+                    className="px-2 py-1 text-gray-600 hover:text-gray-800"
+                    onClick={() =>
+                      handleQuantityChange(item.product._id, item.quantity - 1)
+                    }
+                  >
+                    -
+                  </button>
+                  <span className="px-2 py-1">{item.quantity}</span>
+                  <button
+                    className="px-2 py-1 text-gray-600 hover:text-gray-800"
+                    onClick={() =>
+                      handleQuantityChange(item.product._id, item.quantity + 1)
+                    }
+                  >
+                    +
+                  </button>
+                </div>
                 <button
-                  className="text-gray-500 hover:text-red-500"
+                  className="ml-2 text-gray-500 hover:text-red-500"
                   onClick={() => handleDeleteItem(item.product._id)}
                 >
                   ×
