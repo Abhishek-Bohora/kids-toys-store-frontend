@@ -22,7 +22,7 @@ export default function RootLayout({
 }) {
   const router = useRouter();
   const { items, setCartData } = useCartStore();
-  const { accessTkn } = useAuthStore();
+  const { accessTkn, clearTokens } = useAuthStore();
   const { data, isLoading, error } = useCartQuery(accessTkn);
   useEffect(() => {
     if (data) {
@@ -30,6 +30,11 @@ export default function RootLayout({
     }
   }, [data, setCartData]);
   const cartItemCount = items.length;
+
+  const handleLogout = () => {
+    clearTokens();
+    router.replace("auth/login");
+  };
 
   return (
     <div>
@@ -81,7 +86,7 @@ export default function RootLayout({
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={() => router.push("/logout")}
+                  onClick={() => handleLogout()}
                 >
                   Log out
                 </DropdownMenuItem>
