@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { useAuthStore } from "@/store/auth.store";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const loginSchema = z.object({
   email: z
@@ -80,7 +81,11 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <div>
+        <Image alt="logo" src="/logo.png" width={300} height={300} />
+      </div>
+
       <form onSubmit={handleSubmit(onSubmit)} className="  w-full max-w-sm">
         <div className="grid gap-4">
           <div>
@@ -114,6 +119,15 @@ export default function Login() {
             )}
           </div>
           <Button type="submit">Login</Button>
+          <p className="text-gray-700 text-sm">
+            Don&#39;t have an account yet?
+            <a
+              href="/auth/signup"
+              className="text-blue-600 hover:underline font-semibold"
+            >
+              sign up here
+            </a>
+          </p>
         </div>
       </form>
     </div>

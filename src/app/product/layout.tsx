@@ -1,5 +1,6 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { FaGithub } from "react-icons/fa";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,7 @@ import useCartStore from "@/store/cart.store";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { CiShoppingCart } from "react-icons/ci";
+import Image from "next/image";
 
 export default function RootLayout({
   children,
@@ -37,22 +39,18 @@ export default function RootLayout({
   };
 
   return (
-    <div>
-      <nav className="bg-green-600 p-4 shadow-lg border-b border-green-700 sticky top-0 z-50">
+    <div className="flex flex-col min-h-screen">
+      <nav className="bg-green-600 shadow-lg border-b border-green-700 sticky top-0 z-50 px-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <img
-              src="https://github.com/shadcn.png"
+            <Image
+              src="/logo.png"
               alt="Logo"
-              className="h-10 w-10 rounded-full cursor-pointer hover:opacity-80"
+              width={75}
+              height={75}
+              className="rounded-full cursor-pointer"
               onClick={() => router.push("/product")}
             />
-            <span
-              className="text-white text-xl font-semibold cursor-pointer"
-              onClick={() => router.push("/product")}
-            >
-              Brand Name
-            </span>
           </div>
           <div className="flex items-center gap-4">
             <div className="relative">
@@ -86,7 +84,7 @@ export default function RootLayout({
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={() => handleLogout()}
+                  onClick={handleLogout}
                 >
                   Log out
                 </DropdownMenuItem>
@@ -95,7 +93,24 @@ export default function RootLayout({
           </div>
         </div>
       </nav>
-      <main>{children}</main>
+      <main className="flex-grow">{children}</main>
+      <footer className="bg-green-600 text-gray-200 p-6">
+        <div className="container mx-auto flex flex-col items-center justify-between md:flex-row">
+          <div className="flex items-center space-x-4">
+            <a
+              href="https://github.com/your-profile"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors"
+            >
+              <FaGithub size={24} />
+            </a>
+          </div>
+          <p className="mt-4 md:mt-0 text-center text-sm">
+            © {new Date().getFullYear()} Your Company. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
