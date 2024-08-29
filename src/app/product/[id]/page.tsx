@@ -6,18 +6,35 @@ import Image from "next/image";
 import { useState } from "react";
 import { addItemsToCart } from "@/services/cart.service";
 import { useToast } from "@/components/ui/use-toast";
+import { useUpdateCartItemMutation } from "@/hooks/useCartQuery";
+import useCartStore from "@/store/cart.store";
 
 export default function Item({ params }: { params: { id: string } }) {
   const { toast } = useToast();
   const { accessTkn } = useAuthStore();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState(1);
+
+  const updateCartItemMutation = useUpdateCartItemMutation();
+  const { updateLocalItemQuantity } = useCartStore();
+
+  const handleQuantityChange = (productId: string, newQuantity: number) => {
+    if (newQuantity > 0) {
+      updateLocalItemQuantity(productId, newQuantity);
+      updateCartItemMutation.mutate({
+        productId,
+        quantity: newQuantity,
+        accessToken: accessTkn,
+      });
+    }
+  };
 
   const mutation = useMutation({
-    mutationFn: () => addItemsToCart(params.id, accessTkn),
+    mutationFn: () => addItemsToCart(params.id, accessTkn, quantity),
     onSuccess: () => {
       toast({
         title: "Item added to cart",
-        description: "Your Item has been added to cart successfully!",
+        description: `${quantity} item(s) have been added to your cart successfully!`,
       });
     },
     onError: (error) => {
@@ -41,6 +58,18 @@ export default function Item({ params }: { params: { id: string } }) {
   const product = data.data;
   const mainImageUrl = product.mainImage.url;
   const subImages = [mainImageUrl, ...product.subImages.map((img) => img.url)];
+
+  const incrementQuantity = () => {
+    if (quantity < product.stock) {
+      setQuantity(quantity + 1);
+    }
+  };
+
+  const decrementQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -95,10 +124,26 @@ export default function Item({ params }: { params: { id: string } }) {
           </div>
           <p className="text-gray-700 mb-6">{product.description}</p>
 
+          <div className="flex items-center space-x-4 mb-4">
+            <button
+              onClick={decrementQuantity}
+              className="bg-gray-200 text-gray-700 px-3 py-1 rounded-md"
+            >
+              -
+            </button>
+            <span className="text-lg font-semibold">{quantity}</span>
+            <button
+              onClick={incrementQuantity}
+              className="bg-gray-200 text-gray-700 px-3 py-1 rounded-md"
+            >
+              +
+            </button>
+          </div>
+
           <div className="flex space-x-4">
             <button
               className="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 transition"
-              onClick={() => mutation.mutate()}
+              onClick={() => handleQuantityChange(product._id, quantity)}
             >
               Add to Cart
             </button>
