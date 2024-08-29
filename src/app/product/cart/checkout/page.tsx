@@ -114,13 +114,13 @@ export default function CheckOut() {
                 <div>
                   <h3 className="text-lg font-medium">{item.product.name}</h3>
                   <p className="text-gray-500">
-                    Quantity: {item.quantity} | Price: ${item.product.price}
+                    Quantity: {item.quantity} | Price: Rs {item.product.price}
                   </p>
                 </div>
               </div>
             ))}
             <div className="text-right text-lg font-semibold">
-              Total: ${subtotal.toFixed(2)}
+              Total: Rs {subtotal.toFixed(2)}
             </div>
           </div>
         )}
