@@ -19,33 +19,28 @@ export default function Item({ params }: { params: { id: string } }) {
   const { updateLocalItemQuantity } = useCartStore();
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
-    if (newQuantity > 0) {
-      updateLocalItemQuantity(productId, newQuantity);
-      updateCartItemMutation.mutate({
-        productId,
-        quantity: newQuantity,
-        accessToken: accessTkn,
-      });
-    }
-  };
-
-  const mutation = useMutation({
-    mutationFn: () => addItemsToCart(params.id, accessTkn, quantity),
-    onSuccess: () => {
+    try {
+      if (newQuantity > 0) {
+        updateLocalItemQuantity(productId, newQuantity);
+        updateCartItemMutation.mutate({
+          productId,
+          quantity: newQuantity,
+          accessToken: accessTkn,
+        });
+      }
       toast({
         title: "Item added to cart",
-        description: `${quantity} item(s) have been added to your cart successfully!`,
+        description: `item have been added to your cart successfully!`,
       });
-    },
-    onError: (error) => {
+    } catch (error) {
       toast({
         title: "Error",
         description: "Failed to add item to cart. Please try again.",
         variant: "destructive",
       });
       console.error("Error adding item to cart:", error);
-    },
-  });
+    }
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["product", params.id],

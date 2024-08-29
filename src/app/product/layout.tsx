@@ -94,11 +94,11 @@ export default function RootLayout({
         </div>
       </nav>
       <main className="flex-grow">{children}</main>
-      <footer className="bg-green-600 text-gray-200 p-6">
+      <footer className="bg-green-600 text-gray-200 p-4 mt-2">
         <div className="container mx-auto flex flex-col items-center justify-between md:flex-row">
           <div className="flex items-center space-x-4">
             <a
-              href="https://github.com/your-profile"
+              href="https://github.com/Abhishek-Bohora/kids-toys-store-frontend.git"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-white transition-colors"
@@ -107,7 +107,7 @@ export default function RootLayout({
             </a>
           </div>
           <p className="mt-4 md:mt-0 text-center text-sm">
-            © {new Date().getFullYear()} Your Company. All rights reserved.
+            © {new Date().getFullYear()} abhishek.co All rights reserved.
           </p>
         </div>
       </footer>
