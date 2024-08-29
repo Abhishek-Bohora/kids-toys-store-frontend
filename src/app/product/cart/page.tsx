@@ -2,16 +2,27 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
-import { useCartQuery, useUpdateCartItemMutation } from "@/hooks/useCartQuery";
+import {
+  useCartQuery,
+  useDeleteCartItemMutation,
+  useUpdateCartItemMutation,
+} from "@/hooks/useCartQuery";
 import useCartStore from "@/store/cart.store";
 import { useRouter } from "next/navigation";
 
 export default function Cart() {
   const { accessTkn } = useAuthStore.getState();
-  const { items, subtotal, setCartData, updateLocalItemQuantity } =
-    useCartStore();
+  const {
+    items,
+    subtotal,
+    setCartData,
+    updateLocalItemQuantity,
+    removeItemFromCart,
+  } = useCartStore();
   const { data, isLoading, error } = useCartQuery(accessTkn);
   const updateCartItemMutation = useUpdateCartItemMutation();
+  const deleteCartItemMutation = useDeleteCartItemMutation();
+
   const router = useRouter();
   useEffect(() => {
     if (data) {
@@ -27,6 +38,20 @@ export default function Cart() {
       quantity: newQuantity,
       accessToken: accessTkn,
     });
+  };
+
+  const handleDeleteItem = (productId: string) => {
+    deleteCartItemMutation.mutate(
+      {
+        productId,
+        accessToken: accessTkn,
+      },
+      {
+        onSuccess: () => {
+          removeItemFromCart(productId);
+        },
+      }
+    );
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -71,7 +96,12 @@ export default function Cart() {
                     </option>
                   ))}
                 </select>
-                <button className="text-gray-500 hover:text-red-500">×</button>
+                <button
+                  className="text-gray-500 hover:text-red-500"
+                  onClick={() => handleDeleteItem(item.product._id)}
+                >
+                  ×
+                </button>
               </div>
             </div>
           ))}

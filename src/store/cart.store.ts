@@ -48,6 +48,13 @@ const useCartStore = create<CartStore>((set, get) => ({
     );
     set({ subtotal });
   },
+  removeItemFromCart: (productId: string) =>
+    set((state) => ({
+      items: state.items.filter((item) => item.product._id !== productId),
+      subtotal: state.items
+        .filter((item) => item.product._id !== productId)
+        .reduce((total, item) => total + item.product.price * item.quantity, 0),
+    })),
 }));
 
 export default useCartStore;
