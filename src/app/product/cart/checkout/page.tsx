@@ -13,6 +13,7 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { headers } from "next/headers";
 import { useToast } from "@/components/ui/use-toast";
+import Image from "next/image";
 
 const checkoutSchema = z.object({
   addressLine1: z.string().min(1, { message: "Product name is required" }),
@@ -106,10 +107,12 @@ export default function CheckOut() {
           <div className="space-y-4">
             {items.map((item) => (
               <div key={item.product._id} className="flex items-center gap-4">
-                <img
+                <Image
                   src={item.product.mainImage.url}
                   alt={item.product.name}
-                  className="w-24 h-24 object-cover rounded-lg"
+                  width={130}
+                  height={130}
+                  className=" object-cover"
                 />
                 <div>
                   <h3 className="text-lg font-medium">{item.product.name}</h3>

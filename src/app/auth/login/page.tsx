@@ -10,6 +10,7 @@ import axios from "axios";
 import { useAuthStore } from "@/store/auth.store";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useState } from "react";
 
 const loginSchema = z.object({
   email: z
@@ -59,7 +60,10 @@ export default function Login() {
     resolver: zodResolver(loginSchema),
   });
 
+  const [loading, setLoading] = useState(false);
+
   const onSubmit = async (loginFormData: LoginFormValues) => {
+    setLoading(true); // Set loading to true when the form is submitted
     try {
       const { data } = await loginPOST(loginFormData);
       const { accessToken, refreshToken } = data?.data;
@@ -68,15 +72,12 @@ export default function Login() {
       setRefreshToken(refreshToken);
       setIsAuthenticated(true);
 
-      const { accessTkn, refreshTkn, isAuthenticated, accessTokenData } =
-        useAuthStore.getState();
-      // console.log(accessTkn);
-      // console.log(isAuthenticated);
-      // console.log(accessTokenData);
       router.push("/product");
     } catch (error) {
       clearTokens();
       throw error;
+    } finally {
+      setLoading(false); // Set loading to false when the request is complete
     }
   };
 
@@ -118,7 +119,9 @@ export default function Login() {
               </p>
             )}
           </div>
-          <Button type="submit">Login</Button>
+          <Button type="submit" disabled={loading}>
+            Login
+          </Button>
           <p className="text-gray-700 text-sm">
             Don&#39;t have an account yet?
             <a

@@ -53,6 +53,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Textarea } from "@/components/ui/textarea";
 
 const productSchema = z.object({
   productName: z.string().min(1, { message: "Product name is required" }),
@@ -100,10 +101,10 @@ export default function Product() {
   const totalPages = data?.totalPages || 1;
 
   if (isLoading) {
-    const skeletonArray = Array.from({ length: 8 });
+    const skeletonArray = Array.from({ length: 10 });
 
     return (
-      <div className="flex flex-wrap mt-2 gap-4 p-2">
+      <div className="flex flex-wrap mt-2 gap-4 p-2 justify-center">
         {skeletonArray.map((_, index) => (
           <div key={index} className="flex flex-col space-y-3">
             <Skeleton className="h-[125px] w-[250px] rounded-xl" />
@@ -120,7 +121,7 @@ export default function Product() {
   return (
     <div className="mx-3">
       <AddProductDialog />
-      <div className="flex flex-wrap mt-2 gap-4  p-2">
+      <div className="flex flex-wrap mt-2 gap-4 p-2">
         {data?.products?.map((product) => {
           return (
             <div key={product._id}>
@@ -249,6 +250,7 @@ function AddProductDialog() {
         title: "Product Added",
         description: "Your product has been added successfully!",
       });
+      reset();
     },
   });
 
@@ -292,6 +294,7 @@ function AddProductDialog() {
     register,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<ProductformValues>({ resolver: zodResolver(productSchema) });
 
@@ -328,7 +331,12 @@ function AddProductDialog() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
-            <Input
+            {/* <Input
+              id="description"
+              placeholder="Product description"
+              {...register("productDescription")}
+            /> */}
+            <Textarea
               id="description"
               placeholder="Product description"
               {...register("productDescription")}

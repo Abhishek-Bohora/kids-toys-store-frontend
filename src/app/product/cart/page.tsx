@@ -60,7 +60,7 @@ export default function Cart() {
     );
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <SkeletonLoader />;
   if (error) return <div>Error loading cart: {(error as Error).message}</div>;
   if (items.length === 0) return <div>Your cart is empty</div>;
 
@@ -154,6 +154,57 @@ export default function Cart() {
             >
               Proceed to Checkout
             </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SkeletonLoader() {
+  const skeletonArray = Array.from({ length: 3 });
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <h1 className="text-3xl font-bold mb-8 text-center font-sans">
+        Your Shopping Cart
+      </h1>
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Skeleton for cart items */}
+        <div className="lg:w-2/3 bg-white rounded-lg shadow-sm p-6">
+          <div className="max-h-[calc(100vh-300px)] pr-4">
+            {skeletonArray.map((_, index) => (
+              <div
+                className="mb-6 pb-6 border-b last:border-b-0 animate-pulse"
+                key={index}
+              >
+                <div className="flex items-center">
+                  <div className="w-28 h-28 bg-gray-200 rounded-md mr-6"></div>
+                  <div className="flex-grow">
+                    <div className="h-6 bg-gray-200 rounded mb-2 w-3/4"></div>
+                    <div className="h-5 bg-gray-200 rounded mb-2 w-1/4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <div className="flex items-center border rounded-md mb-2">
+                      <div className="w-10 h-8 bg-gray-200 rounded"></div>
+                      <div className="w-10 h-8 bg-gray-200 rounded"></div>
+                    </div>
+                    <div className="w-16 h-6 bg-gray-200 rounded mt-2"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Skeleton for order summary */}
+        <div className="lg:w-1/3">
+          <div className="bg-white rounded-lg shadow-md p-6 animate-pulse">
+            <div className="h-6 bg-gray-200 rounded mb-4 w-1/3"></div>
+            <div className="flex justify-between mb-4">
+              <div className="h-5 bg-gray-200 rounded w-1/4"></div>
+              <div className="h-5 bg-gray-200 rounded w-1/4"></div>
+            </div>
+            <div className="h-10 bg-gray-200 rounded w-full mt-4"></div>
           </div>
         </div>
       </div>
