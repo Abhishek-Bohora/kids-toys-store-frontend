@@ -47,7 +47,6 @@ import { useState } from "react";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -238,8 +237,9 @@ const ProductCard = ({ name, mainImageUrl, price, productId }) => {
 };
 
 function AddProductDialog() {
-  const { accessTkn, refreshTkn, isAuthenticated, accessTokenData } =
-    useAuthStore.getState();
+  const router = useRouter();
+  const { accessTkn, accessTokenData } = useAuthStore.getState();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const mutation = useMutation({
     mutationFn: (formData: FormData) => addProduct(formData, accessTkn),
     onSuccess: () => {
@@ -251,6 +251,8 @@ function AddProductDialog() {
         description: "Your product has been added successfully!",
       });
       reset();
+      setIsDialogOpen(false);
+      router.refresh();
     },
   });
 
@@ -265,14 +267,12 @@ function AddProductDialog() {
 
   const onSubmit = (productFormData: ProductformValues) => {
     const formData = new FormData();
-    // Map productName to name, productDescription to description
+
     formData.append("name", productFormData.productName);
     formData.append("description", productFormData.productDescription);
 
-    // Ensure category is an ID
     formData.append("category", productFormData.category);
 
-    // Ensure these are numbers
     formData.append("stock", productFormData.stock.toString());
     formData.append("price", productFormData.price.toString());
 
@@ -299,10 +299,10 @@ function AddProductDialog() {
   } = useForm<ProductformValues>({ resolver: zodResolver(productSchema) });
 
   return (
-    <Dialog>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         {accessTokenData?.role === "ADMIN" && (
-          <Button className="mt-4 mx-1">
+          <Button className="mt-4 mx-1" onClick={() => setIsDialogOpen(true)}>
             Add product <IoMdAddCircle className="mx-1" size={20} />
           </Button>
         )}
@@ -331,11 +331,6 @@ function AddProductDialog() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
-            {/* <Input
-              id="description"
-              placeholder="Product description"
-              {...register("productDescription")}
-            /> */}
             <Textarea
               id="description"
               placeholder="Product description"
